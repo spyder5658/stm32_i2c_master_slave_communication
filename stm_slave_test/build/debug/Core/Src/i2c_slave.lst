@@ -1,4 +1,4 @@
-ARM GAS  /tmp/ccsD1NNq.s 			page 1
+ARM GAS  /tmp/ccN4v4j0.s 			page 1
 
 
    1              		.cpu cortex-m3
@@ -41,27 +41,32 @@ ARM GAS  /tmp/ccsD1NNq.s 			page 1
   12:Core/Src/i2c_slave.c **** 
   13:Core/Src/i2c_slave.c **** #define RxSize 6
   14:Core/Src/i2c_slave.c **** uint8_t RxData[RxSize];
-  15:Core/Src/i2c_slave.c **** int count = 0;
-  16:Core/Src/i2c_slave.c **** 
-  17:Core/Src/i2c_slave.c **** void HAL_I2C_ListenCpltCallback(I2C_HandleTypeDef *hi2c){
-  28              		.loc 1 17 57 view -0
+  15:Core/Src/i2c_slave.c **** int rxcount = 0;   //for 
+  16:Core/Src/i2c_slave.c **** int countAddr = 0;  //debugging
+  17:Core/Src/i2c_slave.c **** int countrxcplt = 0;   //purpose
+  18:Core/Src/i2c_slave.c **** int counterror = 0;    //only
+  19:Core/Src/i2c_slave.c **** 
+  20:Core/Src/i2c_slave.c **** 
+  21:Core/Src/i2c_slave.c **** //callback function to enter into slave mode for slave mcu
+  22:Core/Src/i2c_slave.c **** void HAL_I2C_ListenCpltCallback(I2C_HandleTypeDef *hi2c){
+  28              		.loc 1 22 57 view -0
   29              		.cfi_startproc
   30              		@ args = 0, pretend = 0, frame = 0
   31              		@ frame_needed = 0, uses_anonymous_args = 0
-  32              		.loc 1 17 57 is_stmt 0 view .LVU1
+  32              		.loc 1 22 57 is_stmt 0 view .LVU1
   33 0000 08B5     		push	{r3, lr}
   34              		.cfi_def_cfa_offset 8
   35              		.cfi_offset 3, -8
   36              		.cfi_offset 14, -4
-  18:Core/Src/i2c_slave.c ****     HAL_I2C_EnableListen_IT(hi2c);
-  37              		.loc 1 18 5 is_stmt 1 view .LVU2
+ARM GAS  /tmp/ccN4v4j0.s 			page 2
+
+
+  23:Core/Src/i2c_slave.c ****     HAL_I2C_EnableListen_IT(hi2c);
+  37              		.loc 1 23 5 is_stmt 1 view .LVU2
   38 0002 FFF7FEFF 		bl	HAL_I2C_EnableListen_IT
   39              	.LVL1:
-  19:Core/Src/i2c_slave.c **** }
-ARM GAS  /tmp/ccsD1NNq.s 			page 2
-
-
-  40              		.loc 1 19 1 is_stmt 0 view .LVU3
+  24:Core/Src/i2c_slave.c **** }
+  40              		.loc 1 24 1 is_stmt 0 view .LVU3
   41 0006 08BD     		pop	{r3, pc}
   42              		.cfi_endproc
   43              	.LFE65:
@@ -74,168 +79,257 @@ ARM GAS  /tmp/ccsD1NNq.s 			page 1
   52              	HAL_I2C_AddrCallback:
   53              	.LVL2:
   54              	.LFB66:
-  20:Core/Src/i2c_slave.c **** 
-  21:Core/Src/i2c_slave.c **** void HAL_I2C_AddrCallback(I2C_HandleTypeDef *hi2c, uint8_t TransferDirection, uint16_t AddrMatchCod
-  55              		.loc 1 21 102 is_stmt 1 view -0
+  25:Core/Src/i2c_slave.c **** 
+  26:Core/Src/i2c_slave.c **** //callback function when the address of the slave matches initiated by the master
+  27:Core/Src/i2c_slave.c **** void HAL_I2C_AddrCallback(I2C_HandleTypeDef *hi2c, uint8_t TransferDirection, uint16_t AddrMatchCod
+  55              		.loc 1 27 102 is_stmt 1 view -0
   56              		.cfi_startproc
   57              		@ args = 0, pretend = 0, frame = 0
   58              		@ frame_needed = 0, uses_anonymous_args = 0
-  59              		.loc 1 21 102 is_stmt 0 view .LVU5
-  60 0000 08B5     		push	{r3, lr}
+  59              		.loc 1 27 102 is_stmt 0 view .LVU5
+  60 0000 10B5     		push	{r4, lr}
   61              		.cfi_def_cfa_offset 8
-  62              		.cfi_offset 3, -8
+  62              		.cfi_offset 4, -8
   63              		.cfi_offset 14, -4
-  22:Core/Src/i2c_slave.c ****     if (TransferDirection == I2C_DIRECTION_TRANSMIT){
-  64              		.loc 1 22 5 is_stmt 1 view .LVU6
-  65              		.loc 1 22 8 is_stmt 0 view .LVU7
+  28:Core/Src/i2c_slave.c ****     if (TransferDirection == I2C_DIRECTION_TRANSMIT) //if master wants to transmit data
+  64              		.loc 1 28 5 is_stmt 1 view .LVU6
+  65              		.loc 1 28 8 is_stmt 0 view .LVU7
   66 0002 0129     		cmp	r1, #1
   67 0004 02D0     		beq	.L7
-  23:Core/Src/i2c_slave.c ****         HAL_I2C_Slave_Sequential_Receive_IT(hi2c,RxData ,RxSize, I2C_FIRST_AND_LAST_FRAME);
-  24:Core/Src/i2c_slave.c ****     }
-  25:Core/Src/i2c_slave.c ****     else
-  26:Core/Src/i2c_slave.c ****     {
-  27:Core/Src/i2c_slave.c ****         Error_Handler();
-  68              		.loc 1 27 9 is_stmt 1 view .LVU8
+  29:Core/Src/i2c_slave.c ****     {  
+  30:Core/Src/i2c_slave.c ****         countAddr++;
+  31:Core/Src/i2c_slave.c ****         HAL_I2C_Slave_Sequential_Receive_IT(hi2c,RxData+rxcount,1 , I2C_FIRST_FRAME);
+  32:Core/Src/i2c_slave.c ****     }
+  33:Core/Src/i2c_slave.c ****     else  //if master wants to receive data from slave
+  34:Core/Src/i2c_slave.c ****     {
+  35:Core/Src/i2c_slave.c ****         Error_Handler();  
+  68              		.loc 1 35 9 is_stmt 1 view .LVU8
   69 0006 FFF7FEFF 		bl	Error_Handler
   70              	.LVL3:
   71              	.L3:
-  28:Core/Src/i2c_slave.c ****     }
-  29:Core/Src/i2c_slave.c **** 
-  30:Core/Src/i2c_slave.c **** }
-  72              		.loc 1 30 1 is_stmt 0 view .LVU9
-  73 000a 08BD     		pop	{r3, pc}
+  36:Core/Src/i2c_slave.c ****     }
+  37:Core/Src/i2c_slave.c **** 
+  38:Core/Src/i2c_slave.c **** }
+  72              		.loc 1 38 1 is_stmt 0 view .LVU9
+  73 000a 10BD     		pop	{r4, pc}
   74              	.LVL4:
   75              	.L7:
-  23:Core/Src/i2c_slave.c ****         HAL_I2C_Slave_Sequential_Receive_IT(hi2c,RxData ,RxSize, I2C_FIRST_AND_LAST_FRAME);
-  76              		.loc 1 23 9 is_stmt 1 view .LVU10
-  77 000c 0823     		movs	r3, #8
-  78 000e 0622     		movs	r2, #6
+  30:Core/Src/i2c_slave.c ****         HAL_I2C_Slave_Sequential_Receive_IT(hi2c,RxData+rxcount,1 , I2C_FIRST_FRAME);
+  76              		.loc 1 30 9 is_stmt 1 view .LVU10
+  30:Core/Src/i2c_slave.c ****         HAL_I2C_Slave_Sequential_Receive_IT(hi2c,RxData+rxcount,1 , I2C_FIRST_FRAME);
+  77              		.loc 1 30 18 is_stmt 0 view .LVU11
+ARM GAS  /tmp/ccN4v4j0.s 			page 3
+
+
+  78 000c 064A     		ldr	r2, .L8
   79              	.LVL5:
-  23:Core/Src/i2c_slave.c ****         HAL_I2C_Slave_Sequential_Receive_IT(hi2c,RxData ,RxSize, I2C_FIRST_AND_LAST_FRAME);
-  80              		.loc 1 23 9 is_stmt 0 view .LVU11
-  81 0010 0149     		ldr	r1, .L8
-  82              	.LVL6:
-  23:Core/Src/i2c_slave.c ****         HAL_I2C_Slave_Sequential_Receive_IT(hi2c,RxData ,RxSize, I2C_FIRST_AND_LAST_FRAME);
-  83              		.loc 1 23 9 view .LVU12
-  84 0012 FFF7FEFF 		bl	HAL_I2C_Slave_Seq_Receive_IT
-ARM GAS  /tmp/ccsD1NNq.s 			page 3
-
-
-  85              	.LVL7:
-  23:Core/Src/i2c_slave.c ****         HAL_I2C_Slave_Sequential_Receive_IT(hi2c,RxData ,RxSize, I2C_FIRST_AND_LAST_FRAME);
-  86              		.loc 1 23 9 view .LVU13
-  87 0016 F8E7     		b	.L3
-  88              	.L9:
-  89              		.align	2
-  90              	.L8:
-  91 0018 00000000 		.word	RxData
-  92              		.cfi_endproc
-  93              	.LFE66:
-  95              		.section	.text.HAL_I2C_SlaveRxCpltCallback,"ax",%progbits
-  96              		.align	1
-  97              		.global	HAL_I2C_SlaveRxCpltCallback
-  98              		.syntax unified
-  99              		.thumb
- 100              		.thumb_func
- 102              	HAL_I2C_SlaveRxCpltCallback:
- 103              	.LVL8:
- 104              	.LFB67:
-  31:Core/Src/i2c_slave.c **** 
-  32:Core/Src/i2c_slave.c **** void HAL_I2C_SlaveRxCpltCallback(I2C_HandleTypeDef *hi2c){
- 105              		.loc 1 32 58 is_stmt 1 view -0
- 106              		.cfi_startproc
- 107              		@ args = 0, pretend = 0, frame = 0
- 108              		@ frame_needed = 0, uses_anonymous_args = 0
- 109              		@ link register save eliminated.
-  33:Core/Src/i2c_slave.c ****     count++;
- 110              		.loc 1 33 5 view .LVU15
- 111              		.loc 1 33 10 is_stmt 0 view .LVU16
- 112 0000 024A     		ldr	r2, .L11
- 113 0002 1368     		ldr	r3, [r2]
- 114 0004 0133     		adds	r3, r3, #1
- 115 0006 1360     		str	r3, [r2]
-  34:Core/Src/i2c_slave.c **** }
- 116              		.loc 1 34 1 view .LVU17
- 117 0008 7047     		bx	lr
- 118              	.L12:
- 119 000a 00BF     		.align	2
- 120              	.L11:
- 121 000c 00000000 		.word	count
- 122              		.cfi_endproc
- 123              	.LFE67:
- 125              		.section	.text.HAL_I2C_ErrorCallback,"ax",%progbits
- 126              		.align	1
- 127              		.global	HAL_I2C_ErrorCallback
- 128              		.syntax unified
- 129              		.thumb
- 130              		.thumb_func
- 132              	HAL_I2C_ErrorCallback:
- 133              	.LVL9:
- 134              	.LFB68:
-  35:Core/Src/i2c_slave.c **** 
-  36:Core/Src/i2c_slave.c **** void HAL_I2C_ErrorCallback(I2C_HandleTypeDef *hi2c)
-  37:Core/Src/i2c_slave.c **** {
- 135              		.loc 1 37 1 is_stmt 1 view -0
- 136              		.cfi_startproc
- 137              		@ args = 0, pretend = 0, frame = 0
-ARM GAS  /tmp/ccsD1NNq.s 			page 4
-
-
- 138              		@ frame_needed = 0, uses_anonymous_args = 0
- 139              		.loc 1 37 1 is_stmt 0 view .LVU19
- 140 0000 08B5     		push	{r3, lr}
- 141              		.cfi_def_cfa_offset 8
- 142              		.cfi_offset 3, -8
- 143              		.cfi_offset 14, -4
-  38:Core/Src/i2c_slave.c ****     HAL_I2C_EnableListen_IT(hi2c);
- 144              		.loc 1 38 5 is_stmt 1 view .LVU20
- 145 0002 FFF7FEFF 		bl	HAL_I2C_EnableListen_IT
- 146              	.LVL10:
+  30:Core/Src/i2c_slave.c ****         HAL_I2C_Slave_Sequential_Receive_IT(hi2c,RxData+rxcount,1 , I2C_FIRST_FRAME);
+  80              		.loc 1 30 18 view .LVU12
+  81 000e 1368     		ldr	r3, [r2]
+  82 0010 0133     		adds	r3, r3, #1
+  83 0012 1360     		str	r3, [r2]
+  31:Core/Src/i2c_slave.c ****     }
+  84              		.loc 1 31 9 is_stmt 1 view .LVU13
+  85 0014 054B     		ldr	r3, .L8+4
+  86 0016 1968     		ldr	r1, [r3]
+  87              	.LVL6:
+  31:Core/Src/i2c_slave.c ****     }
+  88              		.loc 1 31 9 is_stmt 0 view .LVU14
+  89 0018 0123     		movs	r3, #1
+  90 001a 1A46     		mov	r2, r3
+  91 001c 044C     		ldr	r4, .L8+8
+  92 001e 2144     		add	r1, r1, r4
+  93 0020 FFF7FEFF 		bl	HAL_I2C_Slave_Seq_Receive_IT
+  94              	.LVL7:
+  31:Core/Src/i2c_slave.c ****     }
+  95              		.loc 1 31 9 view .LVU15
+  96 0024 F1E7     		b	.L3
+  97              	.L9:
+  98 0026 00BF     		.align	2
+  99              	.L8:
+ 100 0028 00000000 		.word	countAddr
+ 101 002c 00000000 		.word	rxcount
+ 102 0030 00000000 		.word	RxData
+ 103              		.cfi_endproc
+ 104              	.LFE66:
+ 106              		.section	.text.HAL_I2C_SlaveRxCpltCallback,"ax",%progbits
+ 107              		.align	1
+ 108              		.global	HAL_I2C_SlaveRxCpltCallback
+ 109              		.syntax unified
+ 110              		.thumb
+ 111              		.thumb_func
+ 113              	HAL_I2C_SlaveRxCpltCallback:
+ 114              	.LVL8:
+ 115              	.LFB67:
   39:Core/Src/i2c_slave.c **** 
-  40:Core/Src/i2c_slave.c **** }...
- 147              		.loc 1 40 1 is_stmt 0 view .LVU21
- 148 0006 08BD     		pop	{r3, pc}
- 149              		.cfi_endproc
- 150              	.LFE68:
- 152              		.global	count
- 153              		.section	.bss.count,"aw",%nobits
- 154              		.align	2
- 157              	count:
- 158 0000 00000000 		.space	4
- 159              		.global	RxData
- 160              		.section	.bss.RxData,"aw",%nobits
- 161              		.align	2
- 164              	RxData:
- 165 0000 00000000 		.space	6
- 165      0000
- 166              		.text
- 167              	.Letext0:
- 168              		.file 2 "/home/sarthak/.config/Code/User/globalStorage/bmd.stm32-for-vscode/@xpack-dev-tools/arm-n
- 169              		.file 3 "/home/sarthak/.config/Code/User/globalStorage/bmd.stm32-for-vscode/@xpack-dev-tools/arm-n
- 170              		.file 4 "Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xb.h"
- 171              		.file 5 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h"
- 172              		.file 6 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma.h"
- 173              		.file 7 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h"
- 174              		.file 8 "Core/Inc/main.h"
-ARM GAS  /tmp/ccsD1NNq.s 			page 5
+  40:Core/Src/i2c_slave.c **** void HAL_I2C_SlaveRxCpltCallback(I2C_HandleTypeDef *hi2c){
+ 116              		.loc 1 40 58 is_stmt 1 view -0
+ 117              		.cfi_startproc
+ 118              		@ args = 0, pretend = 0, frame = 0
+ 119              		@ frame_needed = 0, uses_anonymous_args = 0
+ 120              		.loc 1 40 58 is_stmt 0 view .LVU17
+ 121 0000 10B5     		push	{r4, lr}
+ 122              		.cfi_def_cfa_offset 8
+ 123              		.cfi_offset 4, -8
+ 124              		.cfi_offset 14, -4
+  41:Core/Src/i2c_slave.c ****     rxcount++;
+ 125              		.loc 1 41 5 is_stmt 1 view .LVU18
+ 126              		.loc 1 41 12 is_stmt 0 view .LVU19
+ 127 0002 0B4A     		ldr	r2, .L13
+ 128 0004 1368     		ldr	r3, [r2]
+ 129 0006 0133     		adds	r3, r3, #1
+ARM GAS  /tmp/ccN4v4j0.s 			page 4
+
+
+ 130 0008 1360     		str	r3, [r2]
+  42:Core/Src/i2c_slave.c ****     if (rxcount>= RxSize) rxcount=0;
+ 131              		.loc 1 42 5 is_stmt 1 view .LVU20
+ 132              		.loc 1 42 8 is_stmt 0 view .LVU21
+ 133 000a 052B     		cmp	r3, #5
+ 134 000c 02DD     		ble	.L11
+ 135              		.loc 1 42 27 is_stmt 1 discriminator 1 view .LVU22
+ 136              		.loc 1 42 34 is_stmt 0 discriminator 1 view .LVU23
+ 137 000e 1346     		mov	r3, r2
+ 138 0010 0022     		movs	r2, #0
+ 139 0012 1A60     		str	r2, [r3]
+ 140              	.L11:
+  43:Core/Src/i2c_slave.c ****     HAL_I2C_Slave_Sequential_Receive_IT(hi2c,RxData+rxcount,1,I2C_NEXT_FRAME);
+ 141              		.loc 1 43 5 is_stmt 1 view .LVU24
+ 142 0014 064B     		ldr	r3, .L13
+ 143 0016 1968     		ldr	r1, [r3]
+ 144 0018 0423     		movs	r3, #4
+ 145 001a 0122     		movs	r2, #1
+ 146 001c 054C     		ldr	r4, .L13+4
+ 147 001e 2144     		add	r1, r1, r4
+ 148 0020 FFF7FEFF 		bl	HAL_I2C_Slave_Seq_Receive_IT
+ 149              	.LVL9:
+  44:Core/Src/i2c_slave.c ****     countrxcplt++;
+ 150              		.loc 1 44 5 view .LVU25
+ 151              		.loc 1 44 16 is_stmt 0 view .LVU26
+ 152 0024 044A     		ldr	r2, .L13+8
+ 153 0026 1368     		ldr	r3, [r2]
+ 154 0028 0133     		adds	r3, r3, #1
+ 155 002a 1360     		str	r3, [r2]
+  45:Core/Src/i2c_slave.c **** }
+ 156              		.loc 1 45 1 view .LVU27
+ 157 002c 10BD     		pop	{r4, pc}
+ 158              	.L14:
+ 159 002e 00BF     		.align	2
+ 160              	.L13:
+ 161 0030 00000000 		.word	rxcount
+ 162 0034 00000000 		.word	RxData
+ 163 0038 00000000 		.word	countrxcplt
+ 164              		.cfi_endproc
+ 165              	.LFE67:
+ 167              		.section	.text.HAL_I2C_ErrorCallback,"ax",%progbits
+ 168              		.align	1
+ 169              		.global	HAL_I2C_ErrorCallback
+ 170              		.syntax unified
+ 171              		.thumb
+ 172              		.thumb_func
+ 174              	HAL_I2C_ErrorCallback:
+ 175              	.LVL10:
+ 176              	.LFB68:
+  46:Core/Src/i2c_slave.c **** 
+  47:Core/Src/i2c_slave.c **** void HAL_I2C_ErrorCallback(I2C_HandleTypeDef *hi2c)
+  48:Core/Src/i2c_slave.c **** {
+ 177              		.loc 1 48 1 is_stmt 1 view -0
+ 178              		.cfi_startproc
+ 179              		@ args = 0, pretend = 0, frame = 0
+ 180              		@ frame_needed = 0, uses_anonymous_args = 0
+ 181              		.loc 1 48 1 is_stmt 0 view .LVU29
+ARM GAS  /tmp/ccN4v4j0.s 			page 5
+
+
+ 182 0000 08B5     		push	{r3, lr}
+ 183              		.cfi_def_cfa_offset 8
+ 184              		.cfi_offset 3, -8
+ 185              		.cfi_offset 14, -4
+  49:Core/Src/i2c_slave.c ****     counterror++;
+ 186              		.loc 1 49 5 is_stmt 1 view .LVU30
+ 187              		.loc 1 49 15 is_stmt 0 view .LVU31
+ 188 0002 034A     		ldr	r2, .L17
+ 189 0004 1368     		ldr	r3, [r2]
+ 190 0006 0133     		adds	r3, r3, #1
+ 191 0008 1360     		str	r3, [r2]
+  50:Core/Src/i2c_slave.c ****     HAL_I2C_EnableListen_IT(hi2c);
+ 192              		.loc 1 50 5 is_stmt 1 view .LVU32
+ 193 000a FFF7FEFF 		bl	HAL_I2C_EnableListen_IT
+ 194              	.LVL11:
+  51:Core/Src/i2c_slave.c **** 
+  52:Core/Src/i2c_slave.c **** }...
+ 195              		.loc 1 52 1 is_stmt 0 view .LVU33
+ 196 000e 08BD     		pop	{r3, pc}
+ 197              	.L18:
+ 198              		.align	2
+ 199              	.L17:
+ 200 0010 00000000 		.word	counterror
+ 201              		.cfi_endproc
+ 202              	.LFE68:
+ 204              		.global	counterror
+ 205              		.section	.bss.counterror,"aw",%nobits
+ 206              		.align	2
+ 209              	counterror:
+ 210 0000 00000000 		.space	4
+ 211              		.global	countrxcplt
+ 212              		.section	.bss.countrxcplt,"aw",%nobits
+ 213              		.align	2
+ 216              	countrxcplt:
+ 217 0000 00000000 		.space	4
+ 218              		.global	countAddr
+ 219              		.section	.bss.countAddr,"aw",%nobits
+ 220              		.align	2
+ 223              	countAddr:
+ 224 0000 00000000 		.space	4
+ 225              		.global	rxcount
+ 226              		.section	.bss.rxcount,"aw",%nobits
+ 227              		.align	2
+ 230              	rxcount:
+ 231 0000 00000000 		.space	4
+ 232              		.global	RxData
+ 233              		.section	.bss.RxData,"aw",%nobits
+ 234              		.align	2
+ 237              	RxData:
+ 238 0000 00000000 		.space	6
+ 238      0000
+ 239              		.text
+ 240              	.Letext0:
+ 241              		.file 2 "/home/sarthak/.config/Code/User/globalStorage/bmd.stm32-for-vscode/@xpack-dev-tools/arm-n
+ 242              		.file 3 "/home/sarthak/.config/Code/User/globalStorage/bmd.stm32-for-vscode/@xpack-dev-tools/arm-n
+ 243              		.file 4 "Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xb.h"
+ 244              		.file 5 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h"
+ARM GAS  /tmp/ccN4v4j0.s 			page 6
+
+
+ 245              		.file 6 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma.h"
+ 246              		.file 7 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h"
+ 247              		.file 8 "Core/Inc/main.h"
+ARM GAS  /tmp/ccN4v4j0.s 			page 7
 
 
 DEFINED SYMBOLS
                             *ABS*:00000000 i2c_slave.c
-     /tmp/ccsD1NNq.s:19     .text.HAL_I2C_ListenCpltCallback:00000000 $t
-     /tmp/ccsD1NNq.s:25     .text.HAL_I2C_ListenCpltCallback:00000000 HAL_I2C_ListenCpltCallback
-     /tmp/ccsD1NNq.s:46     .text.HAL_I2C_AddrCallback:00000000 $t
-     /tmp/ccsD1NNq.s:52     .text.HAL_I2C_AddrCallback:00000000 HAL_I2C_AddrCallback
-     /tmp/ccsD1NNq.s:91     .text.HAL_I2C_AddrCallback:00000018 $d
-     /tmp/ccsD1NNq.s:164    .bss.RxData:00000000 RxData
-     /tmp/ccsD1NNq.s:96     .text.HAL_I2C_SlaveRxCpltCallback:00000000 $t
-     /tmp/ccsD1NNq.s:102    .text.HAL_I2C_SlaveRxCpltCallback:00000000 HAL_I2C_SlaveRxCpltCallback
-     /tmp/ccsD1NNq.s:121    .text.HAL_I2C_SlaveRxCpltCallback:0000000c $d
-     /tmp/ccsD1NNq.s:157    .bss.count:00000000 count
-     /tmp/ccsD1NNq.s:126    .text.HAL_I2C_ErrorCallback:00000000 $t
-     /tmp/ccsD1NNq.s:132    .text.HAL_I2C_ErrorCallback:00000000 HAL_I2C_ErrorCallback
-     /tmp/ccsD1NNq.s:154    .bss.count:00000000 $d
-     /tmp/ccsD1NNq.s:161    .bss.RxData:00000000 $d
+     /tmp/ccN4v4j0.s:19     .text.HAL_I2C_ListenCpltCallback:00000000 $t
+     /tmp/ccN4v4j0.s:25     .text.HAL_I2C_ListenCpltCallback:00000000 HAL_I2C_ListenCpltCallback
+     /tmp/ccN4v4j0.s:46     .text.HAL_I2C_AddrCallback:00000000 $t
+     /tmp/ccN4v4j0.s:52     .text.HAL_I2C_AddrCallback:00000000 HAL_I2C_AddrCallback
+     /tmp/ccN4v4j0.s:100    .text.HAL_I2C_AddrCallback:00000028 $d
+     /tmp/ccN4v4j0.s:223    .bss.countAddr:00000000 countAddr
+     /tmp/ccN4v4j0.s:230    .bss.rxcount:00000000 rxcount
+     /tmp/ccN4v4j0.s:237    .bss.RxData:00000000 RxData
+     /tmp/ccN4v4j0.s:107    .text.HAL_I2C_SlaveRxCpltCallback:00000000 $t
+     /tmp/ccN4v4j0.s:113    .text.HAL_I2C_SlaveRxCpltCallback:00000000 HAL_I2C_SlaveRxCpltCallback
+     /tmp/ccN4v4j0.s:161    .text.HAL_I2C_SlaveRxCpltCallback:00000030 $d
+     /tmp/ccN4v4j0.s:216    .bss.countrxcplt:00000000 countrxcplt
+     /tmp/ccN4v4j0.s:168    .text.HAL_I2C_ErrorCallback:00000000 $t
+     /tmp/ccN4v4j0.s:174    .text.HAL_I2C_ErrorCallback:00000000 HAL_I2C_ErrorCallback
+     /tmp/ccN4v4j0.s:200    .text.HAL_I2C_ErrorCallback:00000010 $d
+     /tmp/ccN4v4j0.s:209    .bss.counterror:00000000 counterror
+     /tmp/ccN4v4j0.s:206    .bss.counterror:00000000 $d
+     /tmp/ccN4v4j0.s:213    .bss.countrxcplt:00000000 $d
+     /tmp/ccN4v4j0.s:220    .bss.countAddr:00000000 $d
+     /tmp/ccN4v4j0.s:227    .bss.rxcount:00000000 $d
+     /tmp/ccN4v4j0.s:234    .bss.RxData:00000000 $d
 
 UNDEFINED SYMBOLS
 HAL_I2C_EnableListen_IT
