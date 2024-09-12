@@ -17,6 +17,10 @@ int countAddr = 0;  //debugging
 int countrxcplt = 0;   //purpose
 int counterror = 0;    //only
 
+void process_data(void){
+    
+}
+
 
 //callback function to enter into slave mode for slave mcu
 void HAL_I2C_ListenCpltCallback(I2C_HandleTypeDef *hi2c){
@@ -27,6 +31,7 @@ void HAL_I2C_ListenCpltCallback(I2C_HandleTypeDef *hi2c){
 void HAL_I2C_AddrCallback(I2C_HandleTypeDef *hi2c, uint8_t TransferDirection, uint16_t AddrMatchCode){
     if (TransferDirection == I2C_DIRECTION_TRANSMIT) //if master wants to transmit data
     {  
+        rxcount = 0;
         countAddr++;
         HAL_I2C_Slave_Sequential_Receive_IT(hi2c,RxData+rxcount,1 , I2C_FIRST_FRAME);
     }
@@ -39,14 +44,33 @@ void HAL_I2C_AddrCallback(I2C_HandleTypeDef *hi2c, uint8_t TransferDirection, ui
 
 void HAL_I2C_SlaveRxCpltCallback(I2C_HandleTypeDef *hi2c){
     rxcount++;
-    if (rxcount>= RxSize) rxcount=0;
-    HAL_I2C_Slave_Sequential_Receive_IT(hi2c,RxData+rxcount,1,I2C_NEXT_FRAME);
-    countrxcplt++;
+    if (rxcount < RxSize)
+    {
+        if(rxcount == RxSize-1)
+        {
+            HAL_I2C_Slave_Sequential_Receive_IT(hi2c,RxData+rxcount,1,I2C_LAST_FRAME);
+        }
+        else
+        {
+            HAL_I2C_Slave_Sequential_Receive_IT(hi2c,RxData+rxcount,1,I2C_NEXT_FRAME);
+
+        }
+
+    }
+    if (rxcount == RxSize)
+    {
+        process_data();
+    }
 }
 
 void HAL_I2C_ErrorCallback(I2C_HandleTypeDef *hi2c)
 {
     counterror++;
+    uint32_t error_code = HAL_I2C_GetError(hi2c);
+    if (error_code == 4)  //AF error
+    {
+        process_data();
+    }
     HAL_I2C_EnableListen_IT(hi2c);
 
 }
